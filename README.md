@@ -10,44 +10,44 @@ A desktop application designed to automate the analysis of telecommunication tra
 
 ## 🎯 Project Purpose
 
-[cite_start]In modern networks (GSM/LTE/5G/VoIP), dimensioning based on daily averages leads to errors, while dimensioning based on absolute yearly peaks is economically inefficient [cite: 14-17].
+In modern networks (GSM/LTE/5G/VoIP), dimensioning based on daily averages leads to errors, while dimensioning based on absolute yearly peaks is economically inefficient.
 
 **Traffic Analyzer** solves this by:
-* [cite_start]Aggregating measurement data from multiple days (CSV files)[cite: 21].
-* [cite_start]Calculating key engineering metrics: **TCBH** (Time Consistent Busy Hour), **ADPH**, and **FDMH**[cite: 22].
-* [cite_start]Estimating measurement reliability using **Confidence Intervals** (t-Student distribution)[cite: 23].
-* [cite_start]Visualizing traffic profiles to identify anomalies[cite: 24].
+* Aggregating measurement data from multiple days (CSV files).
+* Calculating key engineering metrics: **TCBH** (Time Consistent Busy Hour), **ADPH**, and **FDMH**.
+* Estimating measurement reliability using **Confidence Intervals** (t-Student distribution).
+* Visualizing traffic profiles to identify anomalies.
 
 ## 🛠️ Key Features
 
 ### 1. Advanced TCBH Calculation (Sliding Window)
-Unlike the simple "clock hour" method (FDMH), this application implements the **Time Consistent Busy Hour** method. [cite_start]It finds the continuous 60-minute window (sliding with 1-minute step) where the average traffic across $N$ days is maximized [cite: 46-47].
+Unlike the simple "clock hour" method (FDMH), this application implements the **Time Consistent Busy Hour** method. It finds the continuous 60-minute window (sliding with 1-minute step) where the average traffic across N days is maximized.
 
-[cite_start]$$TCBH_{val} = \max_{t \in \langle 0, 1380 \rangle} \left( \frac{1}{N} \sum_{d=1}^{N} A_d(t, t+60) \right)$$ [cite: 48]
 
+$$TCBH_{val} = \max_{t \in \langle 0, 1380 \rangle} \left( \frac{1}{N} \sum_{d=1}^{N} A_d(t, t+60) \right)$$
 
 ### 2. Time Gating (H2H vs M2M)
-The application allows users to define analysis timeframes (e.g., 8:00 AM – 4:00 PM). [cite_start]This "Time Gating" filters out artificial traffic peaks caused by automated nightly processes (machine traffic/backups), ensuring voice channels are dimensioned for actual human usage [cite: 106-109].
+The application allows users to define analysis timeframes (e.g., 8:00 AM – 4:00 PM). This "Time Gating" filters out artificial traffic peaks caused by automated nightly processes (machine traffic/backups), ensuring voice channels are dimensioned for actual human usage.
 
 ### 3. Statistical Reliability
-Traffic is stochastic. [cite_start]The tool calculates the **95% Confidence Interval** for the TCBH using the **t-Student distribution**, allowing engineers to assess the risk of under-dimensioning [cite: 54-56].
+Traffic is stochastic. The tool calculates the **95% Confidence Interval** for the TCBH using the **t-Student distribution**, allowing engineers to assess the risk of under-dimensioning.
 * **Green Indicator:** Narrow interval, stable traffic.
-* [cite_start]**Red Indicator:** Wide interval, chaotic traffic (requires over-provisioning)[cite: 136].
+* **Red Indicator:** Wide interval, chaotic traffic (requires over-provisioning).
 
 ### 4. Simulation Mode (Monte Carlo)
-Includes an educational "Simulation Mode" that generates 31 virtual measurement days using polynomial distribution and Gaussian noise. [cite_start]This allows users to test algorithms without external CSV data[cite: 139].
+Includes an educational "Simulation Mode" that generates 31 virtual measurement days using polynomial distribution and Gaussian noise. This allows users to test algorithms without external CSV data.
 
 ## 🏗️ Technology Stack & Architecture
 
-[cite_start]The system follows the **MVC (Model-View-Controller)** pattern[cite: 76]:
+The system follows the **MVC (Model-View-Controller)** pattern:
 
-* [cite_start]**GUI:** `CustomTkinter` (Modern UI with Dark Mode and High-DPI support).
-* [cite_start]**Data Processing:** `Pandas` (CSV normalization, dataframes)[cite: 71].
-* [cite_start]**Math Core:** `NumPy` & `SciPy` (Vectorized calculations, convolution for sliding window, t-Student quantiles)[cite: 72, 74].
-* [cite_start]**Visualization:** `Matplotlib` (Embedded flat-design charts)[cite: 124].
+* **GUI:** `CustomTkinter` (Modern UI with Dark Mode and High-DPI support).
+* **Data Processing:** `Pandas` (CSV normalization, dataframes).
+* **Math Core:** `NumPy` & `SciPy` (Vectorized calculations, convolution for sliding window, t-Student quantiles).
+* **Visualization:** `Matplotlib` (Embedded flat-design charts).
 
 ### Algorithmic Optimization
-[cite_start]Instead of slow loops, the TCBH algorithm utilizes **discrete convolution** (`np.convolve`) to process the sliding window efficiently[cite: 97, 101].
+Instead of slow loops, the TCBH algorithm utilizes **discrete convolution** (`np.convolve`) to process the sliding window efficiently.
 
 ## 🚀 Installation & Usage
 
@@ -58,7 +58,7 @@ Includes an educational "Simulation Mode" that generates 31 virtual measurement 
 ### Running the App
 1.  Clone the repository:
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/traffic-analyzer.git](https://github.com/YOUR_USERNAME/traffic-analyzer.git)
+    git clone [https://github.com/definitelynotchase/traffic-analyzer.git](https://github.com/definitelynotchase/traffic-analyzer.git)
     ```
 2.  Install dependencies:
     ```bash
@@ -71,17 +71,16 @@ Includes an educational "Simulation Mode" that generates 31 virtual measurement 
 
 ### User Manual
 1.  **Engineering Mode:**
-    * [cite_start]Set "Analysis Parameters" (e.g., Start: 8, End: 16) to eliminate night anomalies[cite: 132].
-    * [cite_start]Click "Upload Measurement Folder" and select a directory containing daily CSV files[cite: 133].
-    * [cite_start]Read TCBH results and check the Confidence Interval color on the dashboard[cite: 136].
+    * Set "Analysis Parameters" (e.g., Start: 8, End: 16) to eliminate night anomalies.
+    * Click "Upload Measurement Folder" and select a directory containing daily CSV files.
+    * Read TCBH results and check the Confidence Interval color on the dashboard.
 
 2.  **Simulation Mode:**
-    * [cite_start]Click "Simulation (Auto)" to generate synthetic data and visualize the algorithms in action[cite: 139].
+    * Click "Simulation (Auto)" to generate synthetic data and visualize the algorithms in action.
 
 ## 📂 Data Format
-The application automatically detects separators (`;` vs `,`) and decimal formats. [cite_start]Input CSV files should contain a column for traffic volume (e.g., `ruch_erl`) [cite: 83-90].
+The application automatically detects separators (`;` vs `,`) and decimal formats. Input CSV files should contain a column for traffic volume (e.g., `ruch_erl`).
 
 ## 👥 Authors
 **Wrocław University of Science and Technology**
 * **Illia Żukowski**
-* *Course:* Telecommunications Traffic Engineering
