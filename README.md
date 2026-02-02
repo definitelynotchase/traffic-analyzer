@@ -1,76 +1,87 @@
-# Network Traffic Analyzer 📊
+# Traffic Analyzer 📡
 
-A professional Python tool for real-time network traffic monitoring, statistical analysis, and visualization. This project is designed for network diagnostics, link dimensioning (Busy Hour calculation), and traffic pattern recognition.
+**Advanced Telecommunication Traffic Dimensioning Tool**
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+A desktop application designed to automate the analysis of telecommunication traffic and calculate the **Time Consistent Busy Hour (TCBH)** according to **ITU-T E.490/E.500** standards. The tool aids in network dimensioning by providing statistical reliability assessments (Confidence Intervals) and distinguishing between human (H2H) and machine (M2M) traffic.
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)
+![University](https://img.shields.io/badge/Wrocław%20University%20of%20Science%20and%20Technology-Pwr-red)
 
-## 📌 Key Features
+## 🎯 Project Purpose
 
-* **Real-time Packet Sniffing:** Captures Ethernet/IP frames using raw sockets in promiscuous mode.
-* **Statistical Analysis:** Calculates average throughput, standard deviation, and packet size distribution.
-* **Busy Hour (GNR) Detection:** Algorithmic identification of the continuous 60-minute window with the highest traffic load – essential for proper network dimensioning.
-* **Confidence Intervals:** Estimates the 95% confidence interval for mean traffic load to assess connection stability and filter out random outliers.
-* **Data Visualization:** Generates comprehensive time-series plots using **Matplotlib**.
-* **CSV Export:** Automatically logs captured data (`timestamp`, `src_ip`, `dst_ip`, `length`) to CSV files for further processing.
+[cite_start]In modern networks (GSM/LTE/5G/VoIP), dimensioning based on daily averages leads to errors, while dimensioning based on absolute yearly peaks is economically inefficient [cite: 14-17].
 
-## 🛠️ Tech Stack
+**Traffic Analyzer** solves this by:
+* [cite_start]Aggregating measurement data from multiple days (CSV files)[cite: 21].
+* [cite_start]Calculating key engineering metrics: **TCBH** (Time Consistent Busy Hour), **ADPH**, and **FDMH**[cite: 22].
+* [cite_start]Estimating measurement reliability using **Confidence Intervals** (t-Student distribution)[cite: 23].
+* [cite_start]Visualizing traffic profiles to identify anomalies[cite: 24].
 
-The project relies on the following technologies and libraries:
+## 🛠️ Key Features
 
-* **Python 3** (Core logic)
-* **Pandas** (Data manipulation and time-series aggregation)
-* **Matplotlib / Seaborn** (Data visualization)
-* **Scapy / Sockets** (Network layer interaction)
-* **SciPy / NumPy** (Statistical calculations)
+### 1. Advanced TCBH Calculation (Sliding Window)
+Unlike the simple "clock hour" method (FDMH), this application implements the **Time Consistent Busy Hour** method. [cite_start]It finds the continuous 60-minute window (sliding with 1-minute step) where the average traffic across $N$ days is maximized [cite: 46-47].
 
-## 📂 Project Structure
+[cite_start]$$TCBH_{val} = \max_{t \in \langle 0, 1380 \rangle} \left( \frac{1}{N} \sum_{d=1}^{N} A_d(t, t+60) \right)$$ [cite: 48]
 
-* `main.py`: The entry point of the application.
-* `dokumentacja.pdf`: Full technical documentation of the project (in Polish).
-* `intensywnosc_wywolan.txt`: Sample dataset representing call intensity.
-* `czas_obslugi.txt`: Sample dataset representing service times.
-* `icon.icns`: Application icon resources.
 
-*(Note: Build artifacts like `dist/` and `build/` are excluded from the repository)*
+### 2. Time Gating (H2H vs M2M)
+The application allows users to define analysis timeframes (e.g., 8:00 AM – 4:00 PM). [cite_start]This "Time Gating" filters out artificial traffic peaks caused by automated nightly processes (machine traffic/backups), ensuring voice channels are dimensioned for actual human usage [cite: 106-109].
+
+### 3. Statistical Reliability
+Traffic is stochastic. [cite_start]The tool calculates the **95% Confidence Interval** for the TCBH using the **t-Student distribution**, allowing engineers to assess the risk of under-dimensioning [cite: 54-56].
+* **Green Indicator:** Narrow interval, stable traffic.
+* [cite_start]**Red Indicator:** Wide interval, chaotic traffic (requires over-provisioning)[cite: 136].
+
+### 4. Simulation Mode (Monte Carlo)
+Includes an educational "Simulation Mode" that generates 31 virtual measurement days using polynomial distribution and Gaussian noise. [cite_start]This allows users to test algorithms without external CSV data[cite: 139].
+
+## 🏗️ Technology Stack & Architecture
+
+[cite_start]The system follows the **MVC (Model-View-Controller)** pattern[cite: 76]:
+
+* [cite_start]**GUI:** `CustomTkinter` (Modern UI with Dark Mode and High-DPI support).
+* [cite_start]**Data Processing:** `Pandas` (CSV normalization, dataframes)[cite: 71].
+* [cite_start]**Math Core:** `NumPy` & `SciPy` (Vectorized calculations, convolution for sliding window, t-Student quantiles)[cite: 72, 74].
+* [cite_start]**Visualization:** `Matplotlib` (Embedded flat-design charts)[cite: 124].
+
+### Algorithmic Optimization
+[cite_start]Instead of slow loops, the TCBH algorithm utilizes **discrete convolution** (`np.convolve`) to process the sliding window efficiently[cite: 97, 101].
 
 ## 🚀 Installation & Usage
 
 ### Prerequisites
-* Python 3.8 or higher
-* Administrative privileges (Root/Sudo) are required to access the network card in promiscuous mode.
+* Python 3.10 or higher
+* Dependencies listed in `requirements.txt`
 
-### Steps
-
-1.  **Clone the repository:**
+### Running the App
+1.  Clone the repository:
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/network-traffic-analyzer.git](https://github.com/YOUR_USERNAME/network-traffic-analyzer.git)
-    cd network-traffic-analyzer
+    git clone [https://github.com/YOUR_USERNAME/traffic-analyzer.git](https://github.com/YOUR_USERNAME/traffic-analyzer.git)
     ```
-
-2.  **Install dependencies:**
+2.  Install dependencies:
     ```bash
     pip install -r requirements.txt
     ```
-
-3.  **Run the analyzer:**
-    *Note: Sudo is required for raw socket access on macOS/Linux.*
+3.  Run the main script:
     ```bash
-    sudo python main.py
+    python main.py
     ```
 
-## 📊 Sample Output
+### User Manual
+1.  **Engineering Mode:**
+    * [cite_start]Set "Analysis Parameters" (e.g., Start: 8, End: 16) to eliminate night anomalies[cite: 132].
+    * [cite_start]Click "Upload Measurement Folder" and select a directory containing daily CSV files[cite: 133].
+    * [cite_start]Read TCBH results and check the Confidence Interval color on the dashboard[cite: 136].
 
-### 1. Traffic Load Visualization & Busy Hour
-The graph below demonstrates the daily traffic distribution with the identified "Busy Hour" marked, allowing for precise network capacity planning.
+2.  **Simulation Mode:**
+    * [cite_start]Click "Simulation (Auto)" to generate synthetic data and visualize the algorithms in action[cite: 139].
 
-![Traffic Graph Example](graph_example.png)
-*(Note: Place a screenshot of your graph in the project folder named `graph_example.png`)*
+## 📂 Data Format
+The application automatically detects separators (`;` vs `,`) and decimal formats. [cite_start]Input CSV files should contain a column for traffic volume (e.g., `ruch_erl`) [cite: 83-90].
 
-### 2. Data Structure (CSV)
-The raw data is stored in a clean CSV format for easy parsing:
-```csv
-Timestamp, Source_IP, Dest_IP, Protocol, Length
-1678886400, 192.168.1.15, 142.250.180.14, TCP, 1500
-1678886401, 10.0.0.5, 192.168.1.1, UDP, 64
+## 👥 Authors
+**Wrocław University of Science and Technology**
+* **Illia Żukowski**
+* *Course:* Telecommunications Traffic Engineering
